@@ -14,7 +14,7 @@ import { HttpMethod } from "@/types";
 
 import type { ChangeEvent } from "react";
 
-import type { WithSitePost } from "@/types";
+import type { WithSitePlan } from "@/types";
 import { placeholderBlurhash } from "@/lib/utils";
 
 interface SettingsData {
@@ -24,14 +24,14 @@ interface SettingsData {
   imageBlurhash: string;
 }
 
-export default function PostSettings() {
+export default function PlanSettings() {
   const router = useRouter();
 
   // TODO: Undefined check redirects to error
-  const { id: postId } = router.query;
+  const { id: planId } = router.query;
 
-  const { data: settings, isValidating } = useSWR<WithSitePost>(
-    `/api/post?postId=${postId}`,
+  const { data: settings, isValidating } = useSWR<WithSitePlan>(
+    `/api/plan?planId=${planId}`,
     fetcher,
     {
       onError: () => router.push("/"),
@@ -41,7 +41,7 @@ export default function PostSettings() {
 
   const [saving, setSaving] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deletingPost, setDeletingPost] = useState(false);
+  const [deletingPlan, setDeletingPlan] = useState(false);
 
   const [data, setData] = useState<SettingsData>({
     image: settings?.image ?? "",
@@ -60,17 +60,17 @@ export default function PostSettings() {
       });
   }, [settings]);
 
-  async function savePostSettings(data: SettingsData) {
+  async function savePlanSettings(data: SettingsData) {
     setSaving(true);
 
     try {
-      const response = await fetch("/api/post", {
+      const response = await fetch("/api/plan", {
         method: HttpMethod.PUT,
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          id: postId,
+          id: planId,
           slug: data.slug,
           image: data.image,
           imageBlurhash: data.imageBlurhash,
@@ -87,10 +87,10 @@ export default function PostSettings() {
     }
   }
 
-  async function deletePost(postId: string) {
-    setDeletingPost(true);
+  async function deletePlan(planId: string) {
+    setDeletingPlan(true);
     try {
-      const response = await fetch(`/api/post?postId=${postId}`, {
+      const response = await fetch(`/api/plan?planId=${planId}`, {
         method: HttpMethod.DELETE,
       });
 
@@ -100,7 +100,7 @@ export default function PostSettings() {
     } catch (error) {
       console.error(error);
     } finally {
-      setDeletingPost(false);
+      setDeletingPlan(false);
     }
   }
 
@@ -121,10 +121,10 @@ export default function PostSettings() {
           }}
         />
         <div className="max-w-screen-xl mx-auto px-10 sm:px-20 mt-20 mb-16">
-          <h1 className="font-cal text-5xl mb-12">Post Settings</h1>
+          <h1 className="font-cal text-5xl mb-12">Plan Settings</h1>
           <div className="mb-28 flex flex-col space-y-12">
             <div className="space-y-6">
-              <h2 className="font-cal text-2xl">Post Slug</h2>
+              <h2 className="font-cal text-2xl">Plan Slug</h2>
               <div className="border border-gray-700 rounded-lg flex items-center max-w-lg">
                 <span className="px-5 font-cal rounded-l-lg border-r border-gray-600 whitespace-nowrap">
                   {settings?.site?.subdomain}.vercel.pub/
@@ -133,7 +133,7 @@ export default function PostSettings() {
                   className="w-full px-5 py-3 font-cal text-gray-700 bg-white border-none focus:outline-none focus:ring-0 rounded-none rounded-r-lg placeholder-gray-400"
                   type="text"
                   name="slug"
-                  placeholder="post-slug"
+                  placeholder="plan-slug"
                   value={data?.slug}
                   onInput={(e: ChangeEvent<HTMLInputElement>) =>
                     setData((data) => ({ ...data, slug: e.target.value }))
@@ -189,9 +189,9 @@ export default function PostSettings() {
 
               <div className="w-full h-10" />
               <div className="flex flex-col space-y-6 max-w-lg">
-                <h2 className="font-cal text-2xl">Delete Post</h2>
+                <h2 className="font-cal text-2xl">Delete Plan</h2>
                 <p>
-                  Permanently delete your post and all of its contents from our
+                  Permanently delete your plan and all of its contents from our
                   platform. This action is not reversible – please continue with
                   caution.
                 </p>
@@ -201,7 +201,7 @@ export default function PostSettings() {
                   }}
                   className="bg-red-500 text-white border-red-500 hover:text-red-500 hover:bg-white px-5 py-3 max-w-max font-cal border-solid border rounded-md focus:outline-none transition-all ease-in-out duration-150"
                 >
-                  Delete Post
+                  Delete Plan
                 </button>
               </div>
             </div>
@@ -211,14 +211,14 @@ export default function PostSettings() {
           <form
             onSubmit={async (event) => {
               event.preventDefault();
-              await deletePost(postId as string);
+              await deletePlan(planId as string);
             }}
             className="inline-block w-full max-w-md pt-8 overflow-hidden text-center align-middle transition-all bg-white shadow-xl rounded-lg"
           >
-            <h2 className="font-cal text-2xl mb-6">Delete Post</h2>
+            <h2 className="font-cal text-2xl mb-6">Delete Plan</h2>
             <div className="grid gap-y-5 w-5/6 mx-auto">
               <p className="text-gray-600 mb-3">
-                Are you sure you want to delete your post? This action is not
+                Are you sure you want to delete your plan? This action is not
                 reversible.
               </p>
             </div>
@@ -233,14 +233,14 @@ export default function PostSettings() {
 
               <button
                 type="submit"
-                disabled={deletingPost}
+                disabled={deletingPlan}
                 className={`${
-                  deletingPost
+                  deletingPlan
                     ? "cursor-not-allowed text-gray-400 bg-gray-50"
                     : "bg-white text-gray-600 hover:text-black"
                 } w-full px-5 py-5 text-sm border-t border-l border-gray-300 rounded-br focus:outline-none focus:ring-0 transition-all ease-in-out duration-150`}
               >
-                {deletingPost ? <LoadingDots /> : "DELETE POST"}
+                {deletingPlan ? <LoadingDots /> : "DELETE PLAN"}
               </button>
             </div>
           </form>
@@ -249,7 +249,7 @@ export default function PostSettings() {
           <div className="max-w-screen-xl mx-auto px-10 sm:px-20 h-full flex justify-end items-center">
             <button
               onClick={() => {
-                savePostSettings(data);
+                savePlanSettings(data);
               }}
               disabled={saving}
               className={`${

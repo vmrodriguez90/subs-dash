@@ -62,7 +62,7 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-model Post {
+model Plan {
   id            String   @id @default(cuid())
   title         String?  @db.Text
   description   String?  @db.Text
@@ -76,7 +76,7 @@ model Post {
   site          Site?    @relation(fields: [siteId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   siteId        String?
 
-  @@unique([id, siteId], name: "post_site_constraint")
+  @@unique([id, siteId], name: "plan_site_constraint")
   @@index([siteId])
 }
 
@@ -94,7 +94,7 @@ model Site {
   updatedAt     DateTime @updatedAt
   user          User?    @relation(fields: [userId], references: [id])
   userId        String?
-  posts         Post[]
+  plans         Plan[]
 
   @@index([userId])
 }

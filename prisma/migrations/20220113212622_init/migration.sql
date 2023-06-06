@@ -57,7 +57,7 @@ CREATE TABLE `VerificationToken` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `Post` (
+CREATE TABLE `Plan` (
     `id` VARCHAR(191) NOT NULL,
     `title` TEXT NULL,
     `description` TEXT NULL,
@@ -70,7 +70,7 @@ CREATE TABLE `Post` (
     `published` BOOLEAN NOT NULL DEFAULT false,
     `siteId` VARCHAR(191) NULL,
 
-    UNIQUE INDEX `Post_id_siteId_key`(`id`, `siteId`),
+    UNIQUE INDEX `Plan_id_siteId_key`(`id`, `siteId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 

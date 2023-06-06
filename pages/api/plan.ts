@@ -1,4 +1,4 @@
-import { createPost, deletePost, getPost, updatePost } from "@/lib/api";
+import { createPlan, deletePlan, getPlan, updatePlan } from "@/lib/api";
 import { unstable_getServerSession } from "next-auth/next";
 
 import { authOptions } from "./auth/[...nextauth]";
@@ -6,19 +6,19 @@ import { HttpMethod } from "@/types";
 
 import type { NextApiRequest, NextApiResponse } from "next";
 
-export default async function post(req: NextApiRequest, res: NextApiResponse) {
+export default async function plan(req: NextApiRequest, res: NextApiResponse) {
   const session = await unstable_getServerSession(req, res, authOptions);
   if (!session) return res.status(401).end();
 
   switch (req.method) {
     case HttpMethod.GET:
-      return getPost(req, res, session);
+      return getPlan(req, res, session);
     case HttpMethod.POST:
-      return createPost(req, res, session);
+      return createPlan(req, res, session);
     case HttpMethod.DELETE:
-      return deletePost(req, res, session);
+      return deletePlan(req, res, session);
     case HttpMethod.PUT:
-      return updatePost(req, res, session);
+      return updatePlan(req, res, session);
     default:
       res.setHeader("Allow", [
         HttpMethod.GET,

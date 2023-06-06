@@ -1,12 +1,12 @@
 import Link from "next/link";
 import BlurImage from "./BlurImage";
 
-import type { Post } from "@prisma/client";
+import type { Plan } from "@prisma/client";
 import { placeholderBlurhash, toDateString } from "@/lib/utils";
 
 interface BlogCardProps {
   data: Pick<
-    Post,
+    Plan,
     "slug" | "image" | "imageBlurhash" | "title" | "description" | "createdAt"
   >;
 }
@@ -18,7 +18,7 @@ export default function BlogCard({ data }: BlogCardProps) {
         {data.image ? (
           <BlurImage
             src={data.image}
-            alt={data.title ?? "Blog Post"}
+            alt={data.title ?? "Plan Post"}
             width={500}
             height={400}
             className="w-full h-64 object-cover"

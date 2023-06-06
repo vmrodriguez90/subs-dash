@@ -15,7 +15,7 @@ import {
   replaceTweets,
 } from "@/lib/remark-plugins";
 
-import type { AdjacentPost, Meta, _SiteSlugData } from "@/types";
+import type { AdjacentPlan, Meta, _SiteSlugData } from "@/types";
 import type { GetStaticPaths, GetStaticProps } from "next";
 import type { MDXRemoteSerializeResult } from "next-mdx-remote";
 import type { ParsedUrlQuery } from "querystring";
@@ -33,24 +33,24 @@ interface PathProps extends ParsedUrlQuery {
   slug: string;
 }
 
-interface PostProps {
+interface PlanProps {
   stringifiedData: string;
-  stringifiedAdjacentPosts: string;
+  stringifiedAdjacentPlans: string;
 }
 
-export default function Post({
-  stringifiedAdjacentPosts,
+export default function Plan({
+  stringifiedAdjacentPlans,
   stringifiedData,
-}: PostProps) {
+}: PlanProps) {
   const router = useRouter();
   if (router.isFallback) return <Loader />;
 
   const data = JSON.parse(stringifiedData) as _SiteSlugData & {
     mdxSource: MDXRemoteSerializeResult<Record<string, unknown>>;
   };
-  const adjacentPosts = JSON.parse(
-    stringifiedAdjacentPosts
-  ) as Array<AdjacentPost>;
+  const adjacentPlans = JSON.parse(
+    stringifiedAdjacentPlans
+  ) as Array<AdjacentPlan>;
 
   const meta = {
     description: data.description,
@@ -108,7 +108,7 @@ export default function Post({
       <div className="relative h-80 md:h-150 w-full max-w-screen-lg lg:w-2/3 md:w-5/6 m-auto mb-10 md:mb-20 md:rounded-2xl overflow-hidden">
         {data.image ? (
           <BlurImage
-            alt={data.title ?? "Post image"}
+            alt={data.title ?? "Plan image"}
             width={1200}
             height={630}
             className="w-full h-full object-cover"
@@ -130,7 +130,7 @@ export default function Post({
         <MDXRemote {...data.mdxSource} components={components} />
       </article>
 
-      {adjacentPosts.length > 0 && (
+      {adjacentPlans.length > 0 && (
         <div className="relative mt-10 sm:mt-20 mb-20">
           <div
             className="absolute inset-0 flex items-center"
@@ -145,9 +145,9 @@ export default function Post({
           </div>
         </div>
       )}
-      {adjacentPosts && (
+      {adjacentPlans && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-4 gap-y-8 mx-5 lg:mx-12 2xl:mx-auto mb-20 max-w-screen-xl">
-          {adjacentPosts.map((data, index) => (
+          {adjacentPlans.map((data, index) => (
             <BlogCard key={index} data={data} />
           ))}
         </div>
@@ -157,7 +157,7 @@ export default function Post({
 }
 
 export const getStaticPaths: GetStaticPaths<PathProps> = async () => {
-  const posts = await prisma.post.findMany({
+  const plans = await prisma.plan.findMany({
     where: {
       published: true,
       // you can remove this if you want to generate all sites at build time
@@ -177,29 +177,29 @@ export const getStaticPaths: GetStaticPaths<PathProps> = async () => {
   });
 
   return {
-    paths: posts.flatMap((post) => {
-      if (post.site === null || post.site.subdomain === null) return [];
+    paths: plans.flatMap((plan) => {
+      if (plan.site === null || plan.site.subdomain === null) return [];
 
-      if (post.site.customDomain) {
+      if (plan.site.customDomain) {
         return [
           {
             params: {
-              site: post.site.customDomain,
-              slug: post.slug,
+              site: plan.site.customDomain,
+              slug: plan.slug,
             },
           },
           {
             params: {
-              site: post.site.subdomain,
-              slug: post.slug,
+              site: plan.site.subdomain,
+              slug: plan.slug,
             },
           },
         ];
       } else {
         return {
           params: {
-            site: post.site.subdomain,
-            slug: post.slug,
+            site: plan.site.subdomain,
+            slug: plan.slug,
           },
         };
       }
@@ -208,7 +208,7 @@ export const getStaticPaths: GetStaticPaths<PathProps> = async () => {
   };
 };
 
-export const getStaticProps: GetStaticProps<PostProps, PathProps> = async ({
+export const getStaticProps: GetStaticProps<PlanProps, PathProps> = async ({
   params,
 }) => {
   if (!params) throw new Error("No path parameters found");
@@ -228,7 +228,7 @@ export const getStaticProps: GetStaticProps<PostProps, PathProps> = async ({
     };
   }
 
-  const data = (await prisma.post.findFirst({
+  const data = (await prisma.plan.findFirst({
     where: {
       site: {
         ...filter,
@@ -248,9 +248,9 @@ export const getStaticProps: GetStaticProps<PostProps, PathProps> = async ({
 
   if (!data) return { notFound: true, revalidate: 10 };
 
-  const [mdxSource, adjacentPosts] = await Promise.all([
+  const [mdxSource, adjacentPlans] = await Promise.all([
     getMdxSource(data.content ?? ""),
-    prisma.post.findMany({
+    prisma.plan.findMany({
       where: {
         site: {
           ...filter,
@@ -277,15 +277,15 @@ export const getStaticProps: GetStaticProps<PostProps, PathProps> = async ({
         ...data,
         mdxSource,
       }),
-      stringifiedAdjacentPosts: JSON.stringify(adjacentPosts),
+      stringifiedAdjacentplans: JSON.stringify(adjacentPlans),
     },
     revalidate: 3600,
   };
 };
 
-async function getMdxSource(postContents: string) {
+async function getMdxSource(planContents: string) {
   // Serialize the content string into MDX
-  const mdxSource = await serialize(postContents, {
+  const mdxSource = await serialize(planContents, {
     mdxOptions: {
       remarkPlugins: [replaceTweets, () => replaceExamples(prisma)],
     },

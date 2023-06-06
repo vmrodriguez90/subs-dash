@@ -1,39 +1,38 @@
 import prisma from "@/lib/prisma";
-
 import { NextApiRequest, NextApiResponse } from "next";
 import { unstable_getServerSession } from "next-auth/next";
 import { authOptions } from "pages/api/auth/[...nextauth]";
-import type { Post, Site } from ".prisma/client";
+import type { Plan, Site } from ".prisma/client";
 import type { Session } from "next-auth";
 import { revalidate } from "@/lib/revalidate";
 import { getBlurDataURL, placeholderBlurhash } from "@/lib/utils";
 
-import type { WithSitePost } from "@/types";
+import type { WithSitePlan } from "@/types";
 
-interface AllPosts {
-  posts: Array<Post>;
+interface AllPlans {
+  plans: Array<Plan>;
   site: Site | null;
 }
 
 /**
- * Get Post
+ * Get Plans
  *
- * Fetches & returns either a single or all posts available depending on
- * whether a `postId` query parameter is provided. If not all posts are
+ * Fetches & returns either a single or all plans available depending on
+ * whether a `planId` query parameter is provided. If not all plans are
  * returned in descending order.
  *
  * @param req - Next.js API Request
  * @param res - Next.js API Response
  */
-export async function getPost(
+export async function getPlan(
   req: NextApiRequest,
   res: NextApiResponse,
   session: Session
-): Promise<void | NextApiResponse<AllPosts | (WithSitePost | null)>> {
-  const { postId, siteId, published } = req.query;
+): Promise<void | NextApiResponse<AllPlans | (WithSitePlan | null)>> {
+  const { planId, siteId, published } = req.query;
 
   if (
-    Array.isArray(postId) ||
+    Array.isArray(planId) ||
     Array.isArray(siteId) ||
     Array.isArray(published) ||
     !session.user.id
@@ -41,10 +40,10 @@ export async function getPost(
     return res.status(400).end("Bad request. Query parameters are not valid.");
 
   try {
-    if (postId) {
-      const post = await prisma.post.findFirst({
+    if (planId) {
+      const plan = await prisma.plan.findFirst({
         where: {
-          id: postId,
+          id: planId,
           site: {
             user: {
               id: session.user.id,
@@ -56,7 +55,7 @@ export async function getPost(
         },
       });
 
-      return res.status(200).json(post);
+      return res.status(200).json(plan);
     }
 
     const site = await prisma.site.findFirst({
@@ -68,9 +67,9 @@ export async function getPost(
       },
     });
 
-    const posts = !site
+    const plans = !site
       ? []
-      : await prisma.post.findMany({
+      : await prisma.plan.findMany({
           where: {
             site: {
               id: siteId,
@@ -83,7 +82,7 @@ export async function getPost(
         });
 
     return res.status(200).json({
-      posts,
+      plans,
       site,
     });
   } catch (error) {
@@ -93,21 +92,21 @@ export async function getPost(
 }
 
 /**
- * Create Post
+ * Create Plan
  *
- * Creates a new post from a provided `siteId` query parameter.
+ * Creates a new plan from a provided `siteId` query parameter.
  *
- * Once created, the sites new `postId` will be returned.
+ * Once created, the sites new `planId` will be returned.
  *
  * @param req - Next.js API Request
  * @param res - Next.js API Response
  */
-export async function createPost(
+export async function createPlan(
   req: NextApiRequest,
   res: NextApiResponse,
   session: Session
 ): Promise<void | NextApiResponse<{
-  postId: string;
+  planId: string;
 }>> {
   const { siteId } = req.query;
 
@@ -128,7 +127,7 @@ export async function createPost(
   if (!site) return res.status(404).end("Site not found");
 
   try {
-    const response = await prisma.post.create({
+    const response = await prisma.plan.create({
       data: {
         image: `/placeholder.png`,
         imageBlurhash: placeholderBlurhash,
@@ -141,7 +140,7 @@ export async function createPost(
     });
 
     return res.status(201).json({
-      postId: response.id,
+      planId: response.id,
     });
   } catch (error) {
     console.error(error);
@@ -150,22 +149,22 @@ export async function createPost(
 }
 
 /**
- * Delete Post
+ * Delete Plan
  *
- * Deletes a post from the database using a provided `postId` query
+ * Deletes a plan from the database using a provided `planId` query
  * parameter.
  *
  * @param req - Next.js API Request
  * @param res - Next.js API Response
  */
-export async function deletePost(
+export async function deletePlan(
   req: NextApiRequest,
   res: NextApiResponse,
   session: Session
 ): Promise<void | NextApiResponse> {
-  const { postId } = req.query;
+  const { planId } = req.query;
 
-  if (!postId || typeof postId !== "string" || !session?.user?.id) {
+  if (!planId || typeof planId !== "string" || !session?.user?.id) {
     return res
       .status(400)
       .json({ error: "Missing or misconfigured site ID or session ID" });
@@ -173,9 +172,9 @@ export async function deletePost(
 
   const site = await prisma.site.findFirst({
     where: {
-      posts: {
+      plans: {
         some: {
-          id: postId,
+          id: planId,
         },
       },
       user: {
@@ -186,9 +185,9 @@ export async function deletePost(
   if (!site) return res.status(404).end("Site not found");
 
   try {
-    const response = await prisma.post.delete({
+    const response = await prisma.plan.delete({
       where: {
-        id: postId,
+        id: planId,
       },
       include: {
         site: {
@@ -201,7 +200,7 @@ export async function deletePost(
       await revalidate(
         `https://${response.site?.subdomain}.vercel.pub`, // hostname to be revalidated
         response.site.subdomain, // siteId
-        response.slug // slugname for the post
+        response.slug // slugname for the plan
       );
     }
     if (response?.site?.customDomain)
@@ -209,7 +208,7 @@ export async function deletePost(
       await revalidate(
         `https://${response.site.customDomain}`, // hostname to be revalidated
         response.site.customDomain, // siteId
-        response.slug // slugname for the post
+        response.slug // slugname for the plan
       );
 
     return res.status(200).end();
@@ -220,9 +219,9 @@ export async function deletePost(
 }
 
 /**
- * Update Post
+ * Update Plan
  *
- * Updates a post & all of its data using a collection of provided
+ * Updates a plan & all of its data using a collection of provided
  * query parameters. These include the following:
  *  - id
  *  - title
@@ -236,11 +235,11 @@ export async function deletePost(
  * @param req - Next.js API Request
  * @param res - Next.js API Response
  */
-export async function updatePost(
+export async function updatePlan(
   req: NextApiRequest,
   res: NextApiResponse,
   session: Session
-): Promise<void | NextApiResponse<Post>> {
+): Promise<void | NextApiResponse<Plan>> {
   const {
     id,
     title,
@@ -261,7 +260,7 @@ export async function updatePost(
 
   const site = await prisma.site.findFirst({
     where: {
-      posts: {
+      plans: {
         some: {
           id,
         },
@@ -274,7 +273,7 @@ export async function updatePost(
   if (!site) return res.status(404).end("Site not found");
 
   try {
-    const post = await prisma.post.update({
+    const plan = await prisma.plan.update({
       where: {
         id: id,
       },
@@ -293,7 +292,7 @@ export async function updatePost(
       await revalidate(
         `https://${subdomain}.vercel.pub`, // hostname to be revalidated
         subdomain, // siteId
-        slug // slugname for the post
+        slug // slugname for the plan
       );
     }
     if (customDomain)
@@ -301,10 +300,10 @@ export async function updatePost(
       await revalidate(
         `https://${customDomain}`, // hostname to be revalidated
         customDomain, // siteId
-        slug // slugname for the post
+        slug // slugname for the plan
       );
 
-    return res.status(200).json(post);
+    return res.status(200).json(plan);
   } catch (error) {
     console.error(error);
     return res.status(500).end(error);

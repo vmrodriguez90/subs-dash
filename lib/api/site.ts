@@ -152,7 +152,7 @@ export async function deleteSite(
 
   try {
     await prisma.$transaction([
-      prisma.post.deleteMany({
+      prisma.plan.deleteMany({
         where: {
           site: {
             id: siteId,

@@ -1,3 +1,3 @@
 export * from "./domain";
-export * from "./post";
+export * from "./plan";
 export * from "./site";

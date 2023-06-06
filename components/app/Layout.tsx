@@ -20,8 +20,8 @@ export default function Layout({ siteId, children }: LayoutProps) {
   const logo = "/favicon.ico";
   const router = useRouter();
   const sitePage = router.pathname.startsWith("/app/site/[id]");
-  const postPage = router.pathname.startsWith("/app/post/[id]");
-  const rootPage = !sitePage && !postPage;
+  const planPage = router.pathname.startsWith("/app/plan/[id]");
+  const rootPage = !sitePage && !planPage;
   const tab = rootPage
     ? router.asPath.split("/")[1]
     : router.asPath.split("/")[3];
@@ -136,7 +136,7 @@ export default function Layout({ siteId, children }: LayoutProps) {
                     !tab ? "border-black" : "border-transparent"
                   } py-3`}
                 >
-                  Posts
+                  Plans
                 </Link>
                 <Link
                   href={`/site/${router.query.id}/drafts`}
@@ -159,7 +159,7 @@ export default function Layout({ siteId, children }: LayoutProps) {
             </div>
           </div>
         )}
-        {postPage && (
+        {planPage && (
           <div className="absolute left-0 right-0 top-16 font-cal border-b bg-white border-gray-200">
             <div className="flex justify-between items-center space-x-16 max-w-screen-xl mx-auto px-10 sm:px-20">
               {siteId ? (
@@ -167,17 +167,17 @@ export default function Layout({ siteId, children }: LayoutProps) {
                   href={`/site/${siteId}`}
                   className="md:inline-block ml-3 hidden"
                 >
-                  ← All Posts
+                  ← All Plans
                 </Link>
               ) : (
                 <div>
-                  ←<p className="md:inline-block ml-3 hidden">All Posts</p>
+                  ←<p className="md:inline-block ml-3 hidden">All Plans</p>
                 </div>
               )}
 
               <div className="flex justify-between items-center space-x-10 md:space-x-16">
                 <Link
-                  href={`/post/${router.query.id}`}
+                  href={`/plan/${router.query.id}`}
                   className={`border-b-2 ${
                     !tab ? "border-black" : "border-transparent"
                   } py-3`}
@@ -185,7 +185,7 @@ export default function Layout({ siteId, children }: LayoutProps) {
                   Editor
                 </Link>
                 <Link
-                  href={`/post/${router.query.id}/settings`}
+                  href={`/plan/${router.query.id}/settings`}
                   className={`border-b-2 ${
                     tab == "settings" ? "border-black" : "border-transparent"
                   } py-3`}

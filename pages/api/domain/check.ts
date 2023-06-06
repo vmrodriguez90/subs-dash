@@ -10,7 +10,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
  * You can see an implementation example here: https://github.com/vercel/examples/tree/main/solutions/domains-api
  */
 
-export default async function post(req: NextApiRequest, res: NextApiResponse) {
+export default async function plan(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== HttpMethod.GET) {
     res.setHeader("Allow", [HttpMethod.GET]);
     return res.status(405).end(`Method ${req.method} Not Allowed`);

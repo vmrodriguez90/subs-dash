@@ -24,7 +24,7 @@ export const getSiteData = cache(async (site: string): Promise<_SiteData> => {
     where: filter,
     include: {
       user: true,
-      posts: {
+      plans: {
         where: {
           published: true,
         },
@@ -40,7 +40,7 @@ export const getSiteData = cache(async (site: string): Promise<_SiteData> => {
   return data;
 });
 
-export const getPostData = cache(async (site: string, slug: string) => {
+export const getPlanData = cache(async (site: string, slug: string) => {
   let filter: {
     subdomain?: string;
     customDomain?: string;
@@ -54,7 +54,7 @@ export const getPostData = cache(async (site: string, slug: string) => {
     };
   }
 
-  const data = await prisma.post.findFirst({
+  const data = await prisma.plan.findFirst({
     where: {
       site: {
         ...filter,
@@ -72,9 +72,9 @@ export const getPostData = cache(async (site: string, slug: string) => {
 
   if (!data) return { notFound: true, revalidate: 10 };
 
-  const [mdxSource, adjacentPosts] = await Promise.all([
+  const [mdxSource, adjacentPlans] = await Promise.all([
     getMdxSource(data.content!),
-    prisma.post.findMany({
+    prisma.plan.findMany({
       where: {
         site: {
           ...filter,
@@ -100,13 +100,13 @@ export const getPostData = cache(async (site: string, slug: string) => {
       ...data,
       mdxSource,
     },
-    adjacentPosts,
+    adjacentPlans,
   };
 });
 
-async function getMdxSource(postContents: string) {
+async function getMdxSource(planContents: string) {
   // Serialize the content string into MDX
-  const mdxSource = await serialize(postContents, {
+  const mdxSource = await serialize(planContents, {
     mdxOptions: {
       remarkPlugins: [replaceTweets, () => replaceExamples(prisma)],
     },

@@ -9,30 +9,30 @@ import LoadingDots from "@/components/app/loading-dots";
 import { fetcher } from "@/lib/fetcher";
 import { HttpMethod } from "@/types";
 
-import type { Post, Site } from "@prisma/client";
+import type { Plan, Site } from "@prisma/client";
 
-interface SitePostData {
-  posts: Array<Post>;
+interface SitePlanData {
+  plans: Array<Plan>;
   site: Site | null;
 }
 
 export default function SiteDrafts() {
-  const [creatingPost, setCreatingPost] = useState(false);
+  const [creatingPlan, setCreatingPlan] = useState(false);
 
   const router = useRouter();
   const { id: siteId } = router.query;
 
-  const { data } = useSWR<SitePostData>(
-    siteId && `/api/post?siteId=${siteId}&published=false`,
+  const { data } = useSWR<SitePlanData>(
+    siteId && `/api/plan?siteId=${siteId}&published=false`,
     fetcher,
     {
       onSuccess: (data) => !data?.site && router.push("/"),
     }
   );
 
-  async function createPost(siteId: string) {
+  async function createPlan(siteId: string) {
     try {
-      const res = await fetch(`/api/post?siteId=${siteId}`, {
+      const res = await fetch(`/api/plan?siteId=${siteId}`, {
         method: HttpMethod.POST,
         headers: {
           "Content-Type": "application/json",
@@ -41,7 +41,7 @@ export default function SiteDrafts() {
 
       if (res.ok) {
         const data = await res.json();
-        router.push(`/post/${data.postId}`);
+        router.push(`/plan/${data.planId}`);
       }
     } catch (error) {
       console.error(error);
@@ -58,16 +58,16 @@ export default function SiteDrafts() {
           </h1>
           <button
             onClick={() => {
-              setCreatingPost(true);
-              createPost(siteId as string);
+              setCreatingPlan(true);
+              createPlan(siteId as string);
             }}
             className={`${
-              creatingPost
+              creatingPlan
                 ? "cursor-not-allowed bg-gray-300 border-gray-300"
                 : "text-white bg-black hover:bg-white hover:text-black border-black"
             } font-cal text-lg w-3/4 sm:w-40 tracking-wide border-2 px-5 py-3 transition-all ease-in-out duration-150`}
           >
-            {creatingPost ? (
+            {creatingPlan ? (
               <LoadingDots />
             ) : (
               <>
@@ -78,18 +78,18 @@ export default function SiteDrafts() {
         </div>
         <div className="my-10 grid gap-y-10">
           {data ? (
-            data.posts.length > 0 ? (
-              data.posts.map((post) => (
-                <Link href={`/post/${post.id}`} key={post.id}>
+            data.plans.length > 0 ? (
+              data.plans.map((plan) => (
+                <Link href={`/plan/${plan.id}`} key={plan.id}>
                   <div className="flex flex-col md:flex-row md:h-60 rounded-lg overflow-hidden border border-gray-200">
                     <div className="relative w-full h-60 md:h-auto md:w-1/3 md:flex-none">
-                      {post.image ? (
+                      {plan.image ? (
                         <BlurImage
-                          alt={post.title ?? "Unknown Thumbnail"}
+                          alt={plan.title ?? "Unknown Thumbnail"}
                           width={500}
                           height={400}
                           className="h-full object-cover"
-                          src={post.image}
+                          src={plan.image}
                         />
                       ) : (
                         <div className="absolute flex items-center justify-center w-full h-full bg-gray-100 text-gray-500 text-4xl">
@@ -99,19 +99,19 @@ export default function SiteDrafts() {
                     </div>
                     <div className="relative p-10">
                       <h2 className="font-cal text-3xl">
-                        {post.title || "Untitled Post"}
+                        {plan.title || "Untitled Plan"}
                       </h2>
                       <p className="text-base my-5">
-                        {post.description ||
+                        {plan.description ||
                           "No description provided. Click to edit."}
                       </p>
                       <a
                         className="font-cal px-3 py-1 tracking-wide rounded bg-gray-200 text-gray-600 absolute bottom-5 left-10 whitespace-nowrap"
-                        href={`https://${data.site?.subdomain}.vercel.pub/${post.slug}`}
+                        href={`https://${data.site?.subdomain}.vercel.pub/${plan.slug}`}
                         rel="noreferrer"
                         target="_blank"
                       >
-                        {data.site?.subdomain}.vercel.pub/{post.slug} ↗
+                        {data.site?.subdomain}.vercel.pub/{plan.slug} ↗
                       </a>
                     </div>
                   </div>

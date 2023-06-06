@@ -1,18 +1,18 @@
-import type { Post, Site, User } from "@prisma/client";
+import type { Plan, Site, User } from "@prisma/client";
 
-export interface AdjacentPost
+export interface AdjacentPlan
   extends Pick<
-    Post,
+    Plan,
     "createdAt" | "description" | "image" | "imageBlurhash" | "slug" | "title"
   > {}
 
 export interface _SiteData extends Site {
   user: User | null;
   font: "font-cal" | "font-lora" | "font-work";
-  posts: Array<Post>;
+  plans: Array<Plan>;
 }
 
-export interface _SiteSlugData extends Post {
+export interface _SiteSlugData extends Plan {
   site: _SiteSite | null;
 }
 

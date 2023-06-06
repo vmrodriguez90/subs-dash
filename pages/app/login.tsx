@@ -70,7 +70,7 @@ export default function Login() {
             rel="noreferrer"
             target="_blank"
           >
-            blog post
+            plan
           </a>
         </p>
       </div>
